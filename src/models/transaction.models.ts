@@ -9,4 +9,17 @@ export class Transaction {
     ) {
         this._id = createId();
     }
+
+    public get id() {
+        return this._id;
+    }
+
+    public toJson() {
+        return {
+            id: this._id,
+            title: this._title,
+            value: this._value,
+            type: this._type,
+        };
+    }
 }

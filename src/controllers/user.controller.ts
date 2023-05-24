@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { users } from '../database/users';
-import { User } from '../models/user';
+import { User } from '../models/user.models';
 
 export class UserController {
     public list(req: Request, res: Response) {
@@ -101,6 +101,66 @@ export class UserController {
             return res.status(201).send({
                 ok: true,
                 message: 'User was successfully created',
+                data: user.toJson(),
+            });
+        } catch (error: any) {
+            return res.status(500).send({
+                ok: false,
+                message: error.toString(),
+            });
+        }
+    }
+
+    public delete(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+
+            const userIndex = users.findIndex((item) => item.id === id);
+
+            if (userIndex < 0) {
+                return res.status(400).send({
+                    ok: false,
+                    message: 'User was not found',
+                });
+            }
+
+            const deletedUser = users.splice(userIndex, 1);
+
+            return res.status(201).send({
+                ok: true,
+                message: 'User was successfully deleted',
+                data: deletedUser[0].toJson(),
+            });
+        } catch (error: any) {
+            return res.status(500).send({
+                ok: false,
+                message: error.toString(),
+            });
+        }
+    }
+
+    public update(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const { name, cpf, email, age } = req.body;
+
+            const user = users.find((item) => item.id === id);
+
+            if (!user) {
+                return res.status(400).send({
+                    ok: false,
+                    message: 'User was not found',
+                });
+            }
+
+            user.name = name;
+            user.cpf = cpf;
+            user.email = email;
+            user.age = age;
+
+            return res.status(201).send({
+                ok: true,
+                message: 'User was successfully edited',
                 data: user.toJson(),
             });
         } catch (error: any) {

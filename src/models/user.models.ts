@@ -1,9 +1,9 @@
-import { Transaction } from './transaction';
+import { Transaction } from './transaction.models';
 import { v4 as createId } from 'uuid';
 
 export class User {
     private _id: string;
-    private _transactions: Transaction[];
+    private _transaction: Transaction[];
     constructor(
         private _name: string,
         private _cpf: string,
@@ -11,7 +11,7 @@ export class User {
         private _age: number
     ) {
         this._id = createId();
-        this._transactions = [];
+        this._transaction = [];
     }
 
     public get name() {
@@ -21,11 +21,33 @@ export class User {
         return this._id;
     }
 
+    public get age() {
+        return this._age;
+    }
+
     public get email() {
         return this._email;
     }
     public get cpf() {
         return this._cpf;
+    }
+    public get transaction() {
+        return this._transaction;
+    }
+
+    public set name(name: string) {
+        this._name = name;
+    }
+    public set age(age: number) {
+        this._age = age;
+    }
+
+    public set cpf(cpf: string) {
+        this._cpf = cpf;
+    }
+
+    public set email(email: string) {
+        this._email = email;
     }
 
     public toJson() {
