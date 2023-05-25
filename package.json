@@ -6,7 +6,8 @@
     "scripts": {
         "dev": "ts-node-dev --respawn --transpile-only --cls ./src/index.ts",
         "build": "tsc",
-        "start": "node ./build/index.js"
+        "start": "node ./build/index.js",
+        "dev:debug": "ts-node-dev --inspect --respawn --cls --transpile-only ./src/index.ts"
     },
     "prettier": {
         "trailingComma": "es5",
@@ -25,6 +26,7 @@
         "typescript": "^5.0.4"
     },
     "dependencies": {
+        "cpf-cnpj-validator": "^1.0.3",
         "express": "^4.18.2",
         "uuid": "^9.0.0"
     }

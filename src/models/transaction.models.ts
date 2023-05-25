@@ -14,6 +14,16 @@ export class Transaction {
         return this._id;
     }
 
+    public set title(title: string) {
+        this._title = title;
+    }
+    public set valeu(value: number) {
+        this._value = value;
+    }
+    public set type(type: string) {
+        this._title = type;
+    }
+
     public toJson() {
         return {
             id: this._id,

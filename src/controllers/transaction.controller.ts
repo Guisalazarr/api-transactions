@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { users } from '../database/users';
 import { Transaction } from '../models/transaction.models';
+import { ApiResponse } from '../util/http-response.adapter';
 
 export class TransactionController {
     public list(req: Request, res: Response) {
@@ -10,22 +11,16 @@ export class TransactionController {
             const user = users.find((item) => item.id === id);
 
             if (!user) {
-                return res.status(400).send({
-                    ok: false,
-                    message: 'User was not afound',
-                });
+                return ApiResponse.notFound(res, 'Transaction');
             }
 
-            return res.status(200).send({
-                ok: true,
-                message: 'Transactions successfully listed',
-                data: user.transaction.map((item) => item.toJson()),
-            });
+            return ApiResponse.success(
+                res,
+                'Transactions successfully listed',
+                user.transaction.map((item) => item.toJson())
+            );
         } catch (error: any) {
-            return res.status(500).send({
-                ok: false,
-                message: error.toString(),
-            });
+            return ApiResponse.serverError(res, error);
         }
     }
 
@@ -34,45 +29,21 @@ export class TransactionController {
             const { id } = req.params;
             const { title, value, type } = req.body;
 
-            if (!title) {
-                return res.status(400).send({
-                    ok: false,
-                    message: 'Title was not provided',
-                });
-            }
-            if (!value) {
-                return res.status(400).send({
-                    ok: false,
-                    message: 'Value was not provided',
-                });
-            }
-            if (!type) {
-                return res.status(400).send({
-                    ok: false,
-                    message: 'Type was not provided',
-                });
-            }
             const user = users.find((item) => item.id === id);
 
             if (!user) {
-                return res.status(404).send({
-                    ok: false,
-                    message: 'User was not found',
-                });
+                return ApiResponse.notFound(res, 'User');
             }
             const transaction = new Transaction(title, value, type);
             user.transaction.push(transaction);
 
-            return res.status(201).send({
-                ok: true,
-                message: 'Transactions successfully added',
-                data: transaction.toJson(),
-            });
+            return ApiResponse.createSuccess(
+                res,
+                'Transaction',
+                transaction.toJson()
+            );
         } catch (error: any) {
-            return res.status(500).send({
-                ok: false,
-                message: error.toString(),
-            });
+            return ApiResponse.serverError(res, error);
         }
     }
 
@@ -82,10 +53,7 @@ export class TransactionController {
 
             const user = users.find((item) => item.id === id);
             if (!user) {
-                return res.status(404).send({
-                    ok: false,
-                    message: 'User was not found',
-                });
+                return ApiResponse.notFound(res, 'User');
             }
 
             const transactionIndex = user.transaction.findIndex(
@@ -93,10 +61,7 @@ export class TransactionController {
             );
 
             if (transactionIndex < 0) {
-                return res.status(404).send({
-                    ok: false,
-                    message: 'Transaction was not found',
-                });
+                return ApiResponse.notFound(res, 'Transaction');
             }
 
             const deletedTransaction = user.transaction.splice(
@@ -104,16 +69,52 @@ export class TransactionController {
                 1
             );
 
-            return res.status(200).send({
-                ok: true,
-                message: 'Transaction was successfully deleted',
-                data: deletedTransaction[0].toJson(),
-            });
+            return ApiResponse.success(
+                res,
+                'Transaction was successfully deleted',
+                deletedTransaction[0].toJson()
+            );
         } catch (error: any) {
-            return res.status(500).send({
-                ok: false,
-                message: error.toString(),
-            });
+            return ApiResponse.serverError(res, error);
+        }
+    }
+
+    public update(req: Request, res: Response) {
+        try {
+            const { id, transactionId } = req.params;
+            const { title, value, type } = req.body;
+
+            const user = users.find((item) => item.id === id);
+
+            if (!user) {
+                return ApiResponse.notFound(res, 'User');
+            }
+
+            const transaction = user.transaction.find(
+                (item) => item.id === transactionId
+            );
+
+            if (!transaction) {
+                return ApiResponse.notFound(res, 'Transaction');
+            }
+
+            if (title) {
+                transaction.title = title;
+            }
+            if (value) {
+                transaction.valeu = value;
+            }
+            if (type) {
+                transaction.type = type;
+            }
+
+            return ApiResponse.success(
+                res,
+                'Transaction updated successfully',
+                transaction.toJson()
+            );
+        } catch (error: any) {
+            return ApiResponse.serverError(res, error);
         }
     }
 }

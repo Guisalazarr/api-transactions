@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { users } from '../database/users';
 import { User } from '../models/user.models';
+import { ApiResponse } from '../util/http-response.adapter';
 
 export class UserController {
     public list(req: Request, res: Response) {
@@ -18,17 +19,13 @@ export class UserController {
             if (cpf) {
                 result = users.filter((user) => user.cpf === cpf);
             }
-
-            return res.status(200).send({
-                ok: true,
-                message: 'Users were successfully listed',
-                data: result.map((user) => user.toJson()),
-            });
+            return ApiResponse.success(
+                res,
+                'Users were successfully listed',
+                result.map((user) => user.toJson())
+            );
         } catch (error: any) {
-            return res.status(500).send({
-                ok: false,
-                message: error.toString(),
-            });
+            return ApiResponse.serverError(res, error);
         }
     }
 
@@ -36,25 +33,19 @@ export class UserController {
         try {
             const { id } = req.params;
 
-            const result = users.find((user) => user.id === id);
+            const userGet = users.find((item) => item.id === id);
 
-            if (!result) {
-                return res.status(404).send({
-                    ok: false,
-                    message: 'User was not found',
-                });
+            if (!userGet) {
+                return ApiResponse.notFound(res, 'User');
             }
 
-            return res.status(200).send({
-                ok: true,
-                message: 'User was successfully obtained',
-                data: result.toJson(),
-            });
+            return ApiResponse.success(
+                res,
+                'User was successfully obtained',
+                userGet.toJson()
+            );
         } catch (error: any) {
-            return res.status(500).send({
-                ok: false,
-                message: error.toString(),
-            });
+            return ApiResponse.serverError(res, error);
         }
     }
 
@@ -62,52 +53,16 @@ export class UserController {
         try {
             const { name, cpf, email, age } = req.body;
 
-            if (!name) {
-                return res.status(400).send({
-                    ok: false,
-                    message: 'Name was not provided',
-                });
-            }
-            if (!cpf) {
-                return res.status(400).send({
-                    ok: false,
-                    message: 'CPF was not provided',
-                });
-            }
-            if (!email) {
-                return res.status(400).send({
-                    ok: false,
-                    message: 'Email was not provided',
-                });
-            }
-
-            if (!age) {
-                return res.status(400).send({
-                    ok: false,
-                    message: 'Age was not provided',
-                });
-            }
-
-            if (users.some((user) => user.cpf === cpf)) {
-                return res.status(400).send({
-                    ok: false,
-                    message: 'User already has registration',
-                });
-            }
-
             const user = new User(name, cpf, email, age);
             users.push(user);
 
-            return res.status(201).send({
-                ok: true,
-                message: 'User was successfully created',
-                data: user.toJson(),
-            });
+            return ApiResponse.createSuccess(
+                res,
+                'User was successfully created',
+                user.toJson()
+            );
         } catch (error: any) {
-            return res.status(500).send({
-                ok: false,
-                message: error.toString(),
-            });
+            return ApiResponse.serverError(res, error);
         }
     }
 
@@ -118,24 +73,18 @@ export class UserController {
             const userIndex = users.findIndex((item) => item.id === id);
 
             if (userIndex < 0) {
-                return res.status(400).send({
-                    ok: false,
-                    message: 'User was not found',
-                });
+                return ApiResponse.notFound(res, 'User');
             }
 
             const deletedUser = users.splice(userIndex, 1);
 
-            return res.status(201).send({
-                ok: true,
-                message: 'User was successfully deleted',
-                data: deletedUser[0].toJson(),
-            });
+            return ApiResponse.success(
+                res,
+                'User was successfully deleted',
+                deletedUser[0].toJson()
+            );
         } catch (error: any) {
-            return res.status(500).send({
-                ok: false,
-                message: error.toString(),
-            });
+            return ApiResponse.serverError(res, error);
         }
     }
 
@@ -147,27 +96,28 @@ export class UserController {
             const user = users.find((item) => item.id === id);
 
             if (!user) {
-                return res.status(400).send({
-                    ok: false,
-                    message: 'User was not found',
-                });
+                return ApiResponse.notFound(res, 'User');
+            }
+            if (name) {
+                user.name = name;
+            }
+            if (cpf) {
+                user.cpf = cpf;
+            }
+            if (email) {
+                user.email = email;
+            }
+            if (age) {
+                user.age = age;
             }
 
-            user.name = name;
-            user.cpf = cpf;
-            user.email = email;
-            user.age = age;
-
-            return res.status(201).send({
-                ok: true,
-                message: 'User was successfully edited',
-                data: user.toJson(),
-            });
+            return ApiResponse.success(
+                res,
+                'User edited successfully',
+                user.toJson()
+            );
         } catch (error: any) {
-            return res.status(500).send({
-                ok: false,
-                message: error.toString(),
-            });
+            return ApiResponse.serverError(res, error);
         }
     }
 }
