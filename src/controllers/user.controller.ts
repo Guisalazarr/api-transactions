@@ -17,7 +17,7 @@ export class UserController {
                 result = users.filter((user) => user.email === email);
             }
             if (cpf) {
-                result = users.filter((user) => user.cpf === cpf);
+                result = users.filter((user) => user.cpf === Number(cpf));
             }
             return ApiResponse.success(
                 res,

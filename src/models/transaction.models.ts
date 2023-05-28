@@ -1,11 +1,12 @@
 import { v4 as createId } from 'uuid';
+import { TransactionType } from '../types/transactionType';
 
 export class Transaction {
     private _id: string;
     constructor(
         private _title: string,
         private _value: number,
-        private _type: 'income' | 'outcome'
+        private _type: TransactionType
     ) {
         this._id = createId();
     }
@@ -20,8 +21,8 @@ export class Transaction {
     public set valeu(value: number) {
         this._value = value;
     }
-    public set type(type: string) {
-        this._title = type;
+    public set type(type: TransactionType) {
+        this._type = type;
     }
 
     public toJson() {

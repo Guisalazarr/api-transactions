@@ -11,13 +11,41 @@ export class TransactionController {
             const user = users.find((item) => item.id === id);
 
             if (!user) {
-                return ApiResponse.notFound(res, 'Transaction');
+                return ApiResponse.notFound(res, 'User');
             }
 
             return ApiResponse.success(
                 res,
                 'Transactions successfully listed',
                 user.transaction.map((item) => item.toJson())
+            );
+        } catch (error: any) {
+            return ApiResponse.serverError(res, error);
+        }
+    }
+
+    public get(req: Request, res: Response) {
+        try {
+            const { id, transactionId } = req.params;
+
+            const user = users.find((item) => item.id === id);
+
+            if (!user) {
+                return ApiResponse.notFound(res, 'User');
+            }
+
+            const transaction = user.transaction.find(
+                (item) => item.id === transactionId
+            );
+
+            if (!transaction) {
+                return ApiResponse.notFound(res, 'Transaction');
+            }
+
+            return ApiResponse.success(
+                res,
+                'Transaction successfully listed',
+                transaction.toJson()
             );
         } catch (error: any) {
             return ApiResponse.serverError(res, error);

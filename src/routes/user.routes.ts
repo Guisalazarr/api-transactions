@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { UserController } from '../controllers/user.controller';
 import { transacionRoutes } from './transaction.routes';
 import { UserMiddleware } from '../middlewares/user.middleware';
+import { CpfMiddleware } from '../middlewares/cpf.middleware';
 
 export const userRoutes = () => {
     const app = Router();
@@ -12,6 +13,7 @@ export const userRoutes = () => {
         '/',
         [
             UserMiddleware.validateCreateFields,
+            CpfMiddleware.validateCpf,
             UserMiddleware.validateAlreadyExist,
         ],
         new UserController().create
