@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { ApiResponse } from '../util/http-response.adapter';
+import { TransactionType } from '../models/transaction.models';
 export class TransactionMiddleware {
     public static validateCreateFields(
         req: Request,
@@ -33,7 +34,9 @@ export class TransactionMiddleware {
         try {
             const { type } = req.body;
 
-            if (type !== 'income' && type !== 'outcome' && type !== undefined) {
+            const allowedType = Object.values(TransactionType);
+
+            if (!allowedType.includes(type) && type !== undefined) {
                 return ApiResponse.invalidField(res, 'Type');
             }
 

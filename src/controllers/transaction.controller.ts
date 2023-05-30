@@ -1,23 +1,53 @@
 import { Request, Response } from 'express';
 import { users } from '../database/users';
-import { Transaction } from '../models/transaction.models';
 import { ApiResponse } from '../util/http-response.adapter';
+import { Transaction, TransactionType } from '../models/transaction.models';
 
 export class TransactionController {
     public list(req: Request, res: Response) {
         try {
             const { id } = req.params;
+            const { title, type } = req.query;
 
             const user = users.find((item) => item.id === id);
 
             if (!user) {
                 return ApiResponse.notFound(res, 'User');
             }
+            let transaction = user.transaction;
+
+            if (title) {
+                transaction = user.transaction.filter(
+                    (item) => item.title === title
+                );
+            }
+            if (type) {
+                transaction = user.transaction.filter(
+                    (item) => item.type === type
+                );
+            }
+
+            let income = user.transaction
+                .filter((item) => item.type === TransactionType.Income)
+                .reduce((initial, current) => initial + current.value, 0);
+
+            let outcome = user.transaction
+                .filter((item) => item.type === TransactionType.Outcome)
+                .reduce((initial, current) => initial + current.value, 0);
+
+            const result = transaction.map((item) => item.toJson());
 
             return ApiResponse.success(
                 res,
                 'Transactions successfully listed',
-                user.transaction.map((item) => item.toJson())
+                {
+                    result,
+                    balance: {
+                        income,
+                        outcome,
+                        total: income - outcome,
+                    },
+                }
             );
         } catch (error: any) {
             return ApiResponse.serverError(res, error);

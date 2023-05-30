@@ -1,4 +1,4 @@
-import { Transaction } from '../models/transaction.models';
+import { Transaction, TransactionType } from '../models/transaction.models';
 import { User } from '../models/user.models';
 
 export const users = [
@@ -10,7 +10,15 @@ export const users = [
     new User('Janaina', 74536237070, 'janaina@teste.com', 27),
 ];
 
-users[0].transaction.push(new Transaction('Mercado', 20, 'outcome'));
-users[0].transaction.push(new Transaction('Aluguel', 500, 'income'));
-users[1].transaction.push(new Transaction('Roupas', 500, 'outcome'));
-users[1].transaction.push(new Transaction('Gasolina', 500, 'income'));
+users[0].transaction.push(
+    new Transaction('Mercado', 20, TransactionType.Outcome)
+);
+users[0].transaction.push(
+    new Transaction('Salário', 500, TransactionType.Income)
+);
+users[0].transaction.push(
+    new Transaction('Roupas', 80, TransactionType.Outcome)
+);
+users[1].transaction.push(
+    new Transaction('Gasolina', 500, TransactionType.Outcome)
+);

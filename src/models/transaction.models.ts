@@ -1,5 +1,9 @@
 import { v4 as createId } from 'uuid';
-import { TransactionType } from '../types/transactionType';
+
+export enum TransactionType {
+    Income = 'I',
+    Outcome = 'O',
+}
 
 export class Transaction {
     private _id: string;
@@ -13,6 +17,18 @@ export class Transaction {
 
     public get id() {
         return this._id;
+    }
+
+    public get title() {
+        return this._title;
+    }
+
+    public get type() {
+        return this._type;
+    }
+
+    public get value() {
+        return this._value;
     }
 
     public set title(title: string) {
