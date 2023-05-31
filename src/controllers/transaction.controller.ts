@@ -14,28 +14,28 @@ export class TransactionController {
             if (!user) {
                 return ApiResponse.notFound(res, 'User');
             }
-            let transaction = user.transaction;
+            let transactions = user.transaction;
 
             if (title) {
-                transaction = user.transaction.filter(
+                transactions = user.transaction.filter(
                     (item) => item.title === title
                 );
             }
             if (type) {
-                transaction = user.transaction.filter(
+                transactions = user.transaction.filter(
                     (item) => item.type === type
                 );
             }
 
-            let income = user.transaction
+            let income = transactions
                 .filter((item) => item.type === TransactionType.Income)
                 .reduce((initial, current) => initial + current.value, 0);
 
-            let outcome = user.transaction
+            let outcome = transactions
                 .filter((item) => item.type === TransactionType.Outcome)
                 .reduce((initial, current) => initial + current.value, 0);
 
-            const result = transaction.map((item) => item.toJson());
+            const result = transactions.map((item) => item.toJson());
 
             return ApiResponse.success(
                 res,

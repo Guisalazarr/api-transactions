@@ -18,7 +18,11 @@ export const userRoutes = () => {
         ],
         new UserController().create
     );
-    app.put('/:id', new UserController().update);
+    app.put(
+        '/:id',
+        [UserMiddleware.validateAlreadyExist],
+        new UserController().update
+    );
     app.delete('/:id', new UserController().delete);
 
     app.use('/:id/transaction', transacionRoutes());

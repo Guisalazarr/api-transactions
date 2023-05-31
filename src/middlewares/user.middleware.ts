@@ -37,13 +37,21 @@ export class UserMiddleware {
         next: NextFunction
     ) {
         try {
-            const { cpf } = req.body;
+            const { cpf, email } = req.body;
 
-            const findUser = users.some((user) => user.cpf === cpf);
-            if (findUser) {
+            const findCpf = users.some((user) => user.cpf === cpf);
+            if (findCpf) {
                 return ApiResponse.badRequest(
                     res,
                     `User already exists with CPF: ${cpf}`
+                );
+            }
+
+            const findEmail = users.some((user) => user.email === email);
+            if (findEmail) {
+                return ApiResponse.badRequest(
+                    res,
+                    `User already exists with email: ${email}`
                 );
             }
 
