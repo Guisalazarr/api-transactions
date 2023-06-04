@@ -1,6 +1,6 @@
 import { Request, NextFunction, Response } from 'express';
 import { ApiResponse } from '../util/http-response.adapter';
-import { users } from '../database/users';
+import { UserRepository } from '../repositories/user.repository';
 
 export class UserMiddleware {
     public static validateCreateFields(
@@ -39,7 +39,7 @@ export class UserMiddleware {
         try {
             const { cpf, email } = req.body;
 
-            const findCpf = users.some((user) => user.cpf === cpf);
+            const findCpf = new UserRepository().validateAlreadyExist(cpf);
             if (findCpf) {
                 return ApiResponse.badRequest(
                     res,
@@ -47,7 +47,7 @@ export class UserMiddleware {
                 );
             }
 
-            const findEmail = users.some((user) => user.email === email);
+            const findEmail = new UserRepository().validateAlreadyExist(email);
             if (findEmail) {
                 return ApiResponse.badRequest(
                     res,

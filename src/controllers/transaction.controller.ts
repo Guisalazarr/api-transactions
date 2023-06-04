@@ -1,7 +1,9 @@
 import { Request, Response } from 'express';
-import { users } from '../database/users';
 import { ApiResponse } from '../util/http-response.adapter';
+import { UserRepository } from '../repositories/user.repository';
+import { TransactionRepository } from '../repositories/transactions.repository';
 import { Transaction, TransactionType } from '../models/transaction.models';
+import { sumTransactionsValues } from '../util/sum.transaction';
 
 export class TransactionController {
     public list(req: Request, res: Response) {
@@ -9,39 +11,37 @@ export class TransactionController {
             const { id } = req.params;
             const { title, type } = req.query;
 
-            const user = users.find((item) => item.id === id);
+            const user = new UserRepository().get(id);
 
             if (!user) {
                 return ApiResponse.notFound(res, 'User');
             }
-            let transactions = user.transaction;
 
-            if (title) {
-                transactions = user.transaction.filter(
-                    (item) => item.title === title
-                );
-            }
-            if (type) {
-                transactions = user.transaction.filter(
-                    (item) => item.type === type
-                );
-            }
+            let transactions = new TransactionRepository().list({
+                user,
+                title: title?.toString(),
+                type: type as TransactionType,
+            });
 
-            let income = transactions
-                .filter((item) => item.type === TransactionType.Income)
-                .reduce((initial, current) => initial + current.value, 0);
+            let income = sumTransactionsValues(
+                transactions,
+                TransactionType.Income
+            );
 
-            let outcome = transactions
-                .filter((item) => item.type === TransactionType.Outcome)
-                .reduce((initial, current) => initial + current.value, 0);
+            let outcome = sumTransactionsValues(
+                transactions,
+                TransactionType.Outcome
+            );
 
-            const result = transactions.map((item) => item.toJson());
+            const transactionToJson = transactions.map((transaction) =>
+                transaction.toJson()
+            );
 
             return ApiResponse.success(
                 res,
                 'Transactions successfully listed',
                 {
-                    result,
+                    transactionToJson,
                     balance: {
                         income,
                         outcome,
@@ -58,14 +58,15 @@ export class TransactionController {
         try {
             const { id, transactionId } = req.params;
 
-            const user = users.find((item) => item.id === id);
+            const user = new UserRepository().get(id);
 
             if (!user) {
                 return ApiResponse.notFound(res, 'User');
             }
 
-            const transaction = user.transaction.find(
-                (item) => item.id === transactionId
+            const transaction = new TransactionRepository().get(
+                user,
+                transactionId
             );
 
             if (!transaction) {
@@ -87,13 +88,13 @@ export class TransactionController {
             const { id } = req.params;
             const { title, value, type } = req.body;
 
-            const user = users.find((item) => item.id === id);
+            const user = new UserRepository().get(id);
 
             if (!user) {
                 return ApiResponse.notFound(res, 'User');
             }
             const transaction = new Transaction(title, value, type);
-            user.transaction.push(transaction);
+            new TransactionRepository().create(user, transaction);
 
             return ApiResponse.createSuccess(
                 res,
@@ -109,28 +110,24 @@ export class TransactionController {
         try {
             const { id, transactionId } = req.params;
 
-            const user = users.find((item) => item.id === id);
+            const user = new UserRepository().get(id);
             if (!user) {
                 return ApiResponse.notFound(res, 'User');
             }
 
-            const transactionIndex = user.transaction.findIndex(
-                (item) => item.id === transactionId
+            const transactionDeleted = new TransactionRepository().delete(
+                user,
+                transactionId
             );
 
-            if (transactionIndex < 0) {
+            if (!transactionDeleted) {
                 return ApiResponse.notFound(res, 'Transaction');
             }
-
-            const deletedTransaction = user.transaction.splice(
-                transactionIndex,
-                1
-            );
 
             return ApiResponse.success(
                 res,
                 'Transaction was successfully deleted',
-                deletedTransaction[0].toJson()
+                transactionDeleted[0].toJson()
             );
         } catch (error: any) {
             return ApiResponse.serverError(res, error);
@@ -142,14 +139,15 @@ export class TransactionController {
             const { id, transactionId } = req.params;
             const { title, value, type } = req.body;
 
-            const user = users.find((item) => item.id === id);
+            const user = new UserRepository().get(id);
 
             if (!user) {
                 return ApiResponse.notFound(res, 'User');
             }
 
-            const transaction = user.transaction.find(
-                (item) => item.id === transactionId
+            const transaction = new TransactionRepository().get(
+                user,
+                transactionId
             );
 
             if (!transaction) {

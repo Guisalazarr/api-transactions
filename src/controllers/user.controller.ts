@@ -1,28 +1,23 @@
 import { Request, Response } from 'express';
-import { users } from '../database/users';
 import { User } from '../models/user.models';
 import { ApiResponse } from '../util/http-response.adapter';
+import { UserRepository } from '../repositories/user.repository';
 
 export class UserController {
     public list(req: Request, res: Response) {
         try {
             const { name, email, cpf } = req.query;
 
-            let result = users;
+            const userList = new UserRepository().list({
+                name: name?.toString(),
+                email: email?.toString(),
+                cpf: Number(cpf),
+            });
 
-            if (name) {
-                result = users.filter((user) => user.name === name);
-            }
-            if (email) {
-                result = users.filter((user) => user.email === email);
-            }
-            if (cpf) {
-                result = users.filter((user) => user.cpf === Number(cpf));
-            }
             return ApiResponse.success(
                 res,
                 'Users were successfully listed',
-                result.map((user) => user.toJson())
+                userList.map((user) => user.toJson())
             );
         } catch (error: any) {
             return ApiResponse.serverError(res, error);
@@ -33,16 +28,16 @@ export class UserController {
         try {
             const { id } = req.params;
 
-            const userGet = users.find((item) => item.id === id);
+            const user = new UserRepository().get(id);
 
-            if (!userGet) {
+            if (!user) {
                 return ApiResponse.notFound(res, 'User');
             }
 
             return ApiResponse.success(
                 res,
                 'User was successfully obtained',
-                userGet.toJson()
+                user.toJson()
             );
         } catch (error: any) {
             return ApiResponse.serverError(res, error);
@@ -54,7 +49,7 @@ export class UserController {
             const { name, cpf, email, age } = req.body;
 
             const user = new User(name, cpf, email, age);
-            users.push(user);
+            new UserRepository().create(user);
 
             return ApiResponse.createSuccess(
                 res,
@@ -70,13 +65,11 @@ export class UserController {
         try {
             const { id } = req.params;
 
-            const userIndex = users.findIndex((item) => item.id === id);
+            const deletedUser = new UserRepository().delete(id);
 
-            if (userIndex < 0) {
+            if (!deletedUser) {
                 return ApiResponse.notFound(res, 'User');
             }
-
-            const deletedUser = users.splice(userIndex, 1);
 
             return ApiResponse.success(
                 res,
@@ -93,7 +86,7 @@ export class UserController {
             const { id } = req.params;
             const { name, cpf, email, age } = req.body;
 
-            const user = users.find((item) => item.id === id);
+            const user = new UserRepository().get(id);
 
             if (!user) {
                 return ApiResponse.notFound(res, 'User');

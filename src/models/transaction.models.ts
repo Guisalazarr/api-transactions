@@ -23,7 +23,7 @@ export class Transaction {
         return this._title;
     }
 
-    public get type() {
+    public get type(): TransactionType {
         return this._type;
     }
 
